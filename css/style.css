@@ -1,0 +1,413 @@
+:root {
+    --font-primary:
+      helvetica, sans-serif;
+  --font-secondary: helvetica, sans-serif;
+  --color-text: #000;
+  --color-background: #fff;
+  --color-inactive: #ddd;
+  --border-radius: 20px;
+  --transition-default: all 100ms ease-in-out;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+a,
+.Header,
+canvas,
+.Logo,
+.Button,
+.font-item {
+  cursor: pointer;
+}
+
+
+body {
+    font-family: var(--font-primary);
+    font-size : 1.2em;
+    line-height: 135%;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    margin: 0;
+    padding: 0;
+    background: var(--color-background);
+    color: var(--color-text);
+}
+
+body.is-ready .Header,
+body.is-ready canvas {
+    opacity: 1;
+    visibility: visible;
+}
+
+body, html {
+    overflow: hidden;
+}
+
+canvas {
+    display: block;
+    position: absolute;
+    top: 0px;
+    left: 0;
+    width: 100vw !important;
+    height: 100vh !important;
+    z-index: 0;
+    transition: opacity 1ms ease-in-out;
+}
+
+.Footer, .Header {
+    opacity: 0;
+    visibility: 1 !important;;
+}
+
+.Header__right {
+    position: absolute;
+    right: 130px;
+    top: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1em;
+}
+
+#font-gallery {
+    display: none; /* 기본 숨김 */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    z-index: 10;
+    background: transparent;
+    pointer-events: none !important;
+}
+
+#font-gallery.is-visible {
+    display: block !important;
+    opacity: 1;
+}
+
+.font-item {
+    position: absolute; /* 이 설정이 있어야 nth-child의 top/left가 먹힙니다 */
+    width: 120px; /* 아이템 너비 고정 */
+    text-align: center;
+    cursor: grab;
+    pointer-events: auto !important; /* 폰트 변경 가능하게 설정 */
+    z-index: 1001;
+    transition: transform 0.2s ease;
+}
+
+
+.font-name {
+    display: block;
+    margin-top: 5px;
+    font-family: helvetica, sans-serif;
+    font-size: 11.5px;
+    line-height: 1.3;
+    letter-spacing: -0.01em; /* 자간 설정 */
+    word-break: break-all; /* 긴 이름 줄바꿈 설정 */
+    max-width: 120px;
+    text-align: center;
+}
+
+.font-item:hover{
+    transform: translateY(-9px);
+}
+
+.font-item:nth-child(1) { top: 6.5%; left: 36%; }
+.font-item:nth-child(2) { top: 5%; right: 36%; }
+.font-item:nth-child(3) { top: 22%; left: 16%; }
+.font-item:nth-child(4) { top: 22%; right: 16%; }
+.font-item:nth-child(5) { top: 46%; left: 6%; }
+.font-item:nth-child(6) { top: 46%; right: 6%; }
+.font-item:nth-child(7) { top: 73%; left: 2%; }
+.font-item:nth-child(8) { top: 73%; right: 2%; }
+
+
+.preview-box img {
+    width: 95%;  /* 상자 너비에 맞게 조절 */
+    height: auto;
+    object-fit: contain;
+}
+
+.font-item .preview-box {
+    width: 70px; /* 박스 크기 조절 */
+    height: flex;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden; 
+    margin: 0 auto 8px auto;
+}
+
+.Footer {
+    display: none; /* 기본 숨김 */
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    width: 100vw !important;
+    background: transparent !important; 
+    z-index: 9999 !important; 
+    padding: 20px 40px !important;
+    justify-content: space-between !important;
+    align-items: flex-end !important;
+    pointer-events: auto !important;
+}
+
+.Footer.is-visible {
+    display: flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+}
+
+.Footer > * {
+  pointer-events: all; /* 내부 요소는 클릭 가능하게 */
+}
+
+.Button-Group {
+    display: flex;
+    gap: 25px;
+    margin-bottom: 5px; /* 슬라이더들과의 높이 맞춤 */
+}
+
+.Button {
+    font-size: 14.5px; /* 슬라이더 텍스트와 크기 맞춤 */
+    font-family: helvetica, sans-serif;
+    text-transform: none; /* 대문자 방지 */
+    white-space: nowrap;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.Button:hover{
+    transform: scale(1.15);
+}
+
+.Button:last-child { /* Info 버튼 */
+    display: inline-block;
+    font-weight: bold;
+    animation: floating-btn 3s ease-in-out infinite;
+}
+.Button:last-child:hover {
+    animation-play-state: paused;
+    transform: scale(1.15) !important;
+}
+@keyframes floating-btn {
+    0% {
+        transform: translateY(0px);
+    }
+    50% {
+        transform: translateY(-4px); /* 로고보다 가벼운 버튼이므로 높이를 약간 낮춤 */
+    }
+    100% {
+        transform: translateY(0px);
+    }
+}
+
+.Slider-Grid {
+  display: grid !important;
+  grid-template-columns: repeat(3, 235px); /* 3개씩 한 줄 */
+  grid-template-rows: repeat(2, auto);    /* 총 2줄 */
+  gap: 0px 40px; 
+}
+
+.Slider-Item {
+    display: flex !important;
+    flex-direction: row !important;
+    align-items: center !important;
+    /* [핵심] 글자는 왼쪽 끝, 슬라이더 바는 오른쪽 끝으로 배치 */
+    justify-content: space-between !important; 
+    width: 120% !important; /* 글씨와 슬라이더의 간격 */
+    padding-right: 50px; /* 우측 벽에 너무 붙지 않게 살짝 여백 */
+}
+
+.Slider-Item span {
+    /* 1. 폰트 크기 (여기 숫자를 키우면 확실히 커집니다) */
+    font-size: 14.5px !important; 
+    
+    /* 2. 폰트 종류 */
+    font-family: helvetica, sans-serif;
+    
+    /* 3. 레이아웃 설정 */
+    display: inline-block !important;
+    letter-spacing: -0.01em;
+    margin: 0 !important;
+    padding: 0 !important;
+    text-align: left;
+    
+    /* 4. 슬라이더 바와의 간격 */
+    margin-right: 2px !important;
+    
+    /* 5. 줄바꿈 방지 */
+    white-space: nowrap;
+}
+.Slider-Item label {
+    font-family: helvetica, sans-serif;
+    font-size: 10px;
+    letter-spacing: -0.01em;
+    margin: 0 !important;
+    padding: 0 !important;
+    display: inline-block !important;
+    text-align: left; /* 글자는 왼쪽 정렬 */
+    flex: 0 1 auto;
+    margin-right: 20px;
+}
+.Slider-Item input[type="range"] {
+    /* [핵심] 바의 길이를 고정해야 우측 끝 라인이 일직선으로 맞습니다 */
+    flex: 0 0 160px !important; 
+    width: 160px !important;
+    
+    /* range.css의 패딩이 정렬을 방해하므로 강제 초기화 */
+    margin: 0 !important;
+    padding: 0 !important; 
+    
+    cursor: pointer;
+    -webkit-appearance: none;
+    background: transparent !important;
+}
+
+.Logo {
+  position: absolute;
+  left: 50%;
+  top: 28px;
+  transform: translateX(-50%) scale(0.85);
+  width: 270px;
+  height: 85px;
+  background: url("../img/Fruticose_Logo2.svg") no-repeat;
+  background-size: contain;
+  background-position: center center;
+  z-index: 100; /*다른 요소보다 위에 보이도록 설정 */
+  transition: transform 0.3s ease;
+  cursor: pointer;
+
+  animation: floating 3s ease-in-out infinite;
+  transition: scale 0.5s ease-out;
+}
+
+.Logo:hover {
+    animation-play-state: paused;
+    transform: translateX(-50%) scale(0.9) !important;
+}
+
+@keyframes floating {
+    0% {
+        transform: translateX(-50%) translateY(0px) scale(0.85);
+    }
+    50% {
+        transform: translateX(-50%) translateY(-10px) scale(0.85); /* 살짝 위로 이동 및 확대 */
+    }
+    100% {
+        transform: translateX(-50%) translateY(0px) scale(0.85);
+    }
+}
+
+.Logo.active-click {
+    transform: translateX(-50%) scale(1.0) !important;
+}
+
+/*Placeholder */
+.Placeholder {
+    position: absolute;
+    width: 100%;
+    top: calc(50% - 40px);
+    right: 50%;
+    left: 50%; /* right: 50%에서 변경 */
+    transform: translate(-50%, -50%); /* 정확히 정중앙으로 보정 */
+    text-align: center;
+    pointer-events: none;
+    z-index: 1; 
+    opacity: 0; /* 기본적으로 투명하게 숨김 */
+    visibility: hidden; 
+    transition: opacity 200ms ease-in-out;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+}
+
+body.show-placeholder .Placeholder {
+    opacity: 1;
+    visibility: visible;
+}
+
+.Placeholder__text {
+    color: rgb(233, 233, 233);
+    font-family: Arial, Helvetica, sans-serif;
+    line-height: normal;
+    text-align: center;
+    font-size: 90px;
+    margin: 0;
+}
+
+
+/* State Classes */
+body.show-placeholder .Placeholder {
+    opacity: 1;
+    display: flex;
+}
+
+body canvas {
+    transition: opacity 300ms ease-in-out;
+    opacity: 0;
+    visibility: hidden;
+}
+
+
+.modal {
+    display: none; /* 기본적으로 숨김 */
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgb(255, 255, 255, 0.4);
+}
+
+.modal-content {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    
+    width: 437px; /* 스크린샷 비율에 맞춘 너비 */
+    background-color: #fff;
+    border: 1px solid #000; /* 얇고 선명한 검정 테두리 */
+    padding: 37px 40px 32px 40px;
+    
+    font-family: 'Helvetica', 'Arial', sans-serif;
+    color: #000;
+    line-height: 1.5;
+}
+
+.modal-inner {
+    display: flex;
+    flex-direction: column;
+    gap: 50px; /* 각 섹션 간의 넓은 간격 */
+}
+
+/* 텍스트 스타일링 */
+.info-intro p, .info-function p {
+    font-size: 17px;
+    margin: 0;
+    text-align: left; /* 텍스트 양끝 정렬로 정갈하게 */
+    line-height: 1.6;
+}
+
+.info-function h3 {
+    font-size: 17px;
+    font-weight: bold;
+    margin: 0 0 17px 0;
+}
+
+/* 특정 키워드 강조 */
+.modal-content strong {
+    font-weight: bold;
+}
+
+/* 하단 연락처 (Contact me ! / @ID) */
+.info-contact {
+    display: flex;
+    justify-content: space-between; /* 좌우 끝으로 배치 */
+    margin-top: 20px;
+    font-style: italic; /* 이탈릭체 적용 */
+    font-size: 14px;
+}

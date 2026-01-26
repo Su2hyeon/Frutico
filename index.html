@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Frutico</title>
+
+    <link rel="stylesheet" href="css/style.css">
+    <link rel="stylesheet" href="css/reset.css">
+    <link rel="stylesheet" href="css/range.css">
+
+    <script src="js/dist/p5.js"></script>
+    <script src="js/dist/opentype.min.js"></script>
+    <script src="js/dist/differential_growth.js"></script> 
+    <script>
+      (function() {
+        if (typeof World === 'undefined' && window.p5 && p5.instance) {
+        }
+      })();
+    </script>
+
+    <script type="module">
+        import { VERT, BLUR_THRESH } from './js/shader.js';
+        window.VERT = VERT;
+        window.BLUR_THRESH = BLUR_THRESH;
+    </script>
+    <script src="js/setting.js"></script>
+    <script src="js/controls.js"></script>
+
+    <script>
+    window.plausible = window.plausible || function () {(plausible.q = plausible.q || []).push(arguments)}, plausible.init = plausible.init || function (i) {plausible.o = i || {}};
+    plausible.init({
+      endpoint: "/api/event"
+    })
+    </script>
+    <script>
+        // 기존 슬라이더(Amount) 요소를 찾아 값을 전역 변수에 할당
+        const amountSlider = document.querySelector('#random input'); // 기존 구조에 따라 선택자 조정 필요
+        if (amountSlider) {
+            amountSlider.addEventListener('input', (e) => {
+                window.amountValue = parseFloat(e.target.value);
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class = "Placeholder">
+      <div class = "Placeholder__text">Type text and drag the font</div>
+    </div>
+
+     <div class = "Header__right">
+      <div class = "Logo"></div>
+    
+    <div id="font-gallery" class="FontGallery">
+      <div class="font-item" draggable="true" data-font-url="assets/fonts/NotoSerif-LightItalic.ttf">
+        <div class="preview-box">
+          <img src="assets/img/NotoSerif.svg" alt="NotoSerif Icon">
+        </div>
+        <span class="font-name">NotoSerif</span>
+      </div>
+      <div class="font-item" draggable="true" data-font-url="assets/fonts/Bodoni_Ornaments.ttf">
+        <div class="preview-box">
+          <img src="assets/img/Bodoni Ornaments.svg" alt="Bodoni Ornaments Icon">
+        </div>
+        <span class="font-name">Bodoni Ornaments</span>
+      </div>
+      <div class="font-item" draggable="true" data-font-url="assets/fonts/IBMPlexMono-Bold.otf">
+        <div class="preview-box">
+          <img src="assets/img/IBM Plex Mono Bold.svg" alt="IBM Plex Mono Bold Icon">
+        </div>
+        <span class="font-name">IBM Plex Mono Bold</span>
+      </div>
+      <div class="font-item" draggable="true" data-font-url="assets/fonts/SF-Compact-Rounded-Medium.otf">
+        <div class="preview-box">
+          <img src="assets/img/SF Compact Rounded Medium.svg" alt="SF Compact Rounded Medium Icon">
+        </div>
+        <span class="font-name">SF Compact Rounded Medium</span>
+      </div>
+      <div class="font-item" draggable="true" data-font-url="assets/fonts/IBMPlexMono-Thin.ttf">
+        <div class="preview-box">
+          <img src="assets/img/IBM Plex Mono Thin.svg" alt="IBM Plex Mono Thin Icon">
+        </div>
+        <span class="font-name">IBM Plex Mono Thin</span>
+      </div>
+      <div class="font-item" draggable="true" data-font-url="assets/fonts/Helvetica Black.otf">
+        <div class="preview-box">
+          <img src="assets/img/Helvetica Black.svg" alt="Helvetica Black Icon">
+        </div>
+        <span class="font-name">Helvetica Black</span>
+      </div>
+      <div class="font-item" draggable="true" data-font-url="assets/fonts/Avenir-Regular.ttf">
+        <div class="preview-box">
+          <img src="assets/img/Avenir-Regular.svg" alt="Avenir Regular Icon">
+        </div>
+        <span class="font-name">Avenir Regular</span>
+      </div>
+      <div class="font-item" draggable="true" data-font-url="assets/fonts/Baskerville-Regular.ttf">
+        <div class="preview-box">
+          <img src="assets/img/Baskerville-Regular.svg" alt="Baskerville Regular Icon">
+        </div>
+        <span class="font-name">Baskerville Regular</span>
+      </div>
+    </div>
+
+    <div id="info-modal" class="modal">
+      <div class="modal-content">
+        <div class="modal-inner">
+          <section class="info-intro">
+            <p><strong>Frutico</strong> is an interactive typography website inspired by the growth patterns of Lichen, visualizing the flow of time and the accumulation of change. Explore organic plant-like transformations by selecting your favorite fonts and adjusting environmental sliders!</p>
+          </section>
+
+          <section class="info-function">
+            <h3>How to Plant?</h3>
+            <p>
+              <strong>Drag and drop</strong> a font onto the canvas to change the font.
+              <strong>Spacebar</strong> stops the growth process. 
+              <strong>Double-click</strong> clears the screen. 
+              <strong>Click the Logo</strong> to hide all interface elements for a fully immersive screen.
+            </p>
+          </section>
+          <footer class="info-contact">
+            <span class="contact-label">Cultivated by</span>
+            <span class="contact-id">@iee.su.hyeon</span>
+          </footer>
+        </div>
+      </div>
+    </div>
+
+    <div id="Footer" class="Footer">
+      <div class="Button-Group">
+        <div id="btn-export-png" class="Button">Export as PNG</div>
+        <div id="btn-record" class="Button">Record</div>
+        <div id="btn-reset" class="Button">Reset</div>
+        <div id="btn-info" class="Button"> Read me ! </div>
+      </div>
+      
+      <div class = "Slider-Grid">
+        <div class="Slider-Item"><span>Humidity</span><input type="range" min="0" max="100" value="0" id="slider-speed"></div>
+        <div class="Slider-Item"><span>Spread</span><input type="range" min="0" max="100" value="0" id="slider-mutation-w"></div>
+        <div class="Slider-Item"><span>Height</span><input type="range" min="0" max="100" value="0" id="slider-mutation-h"></div>
+        <div class="Slider-Item"><span>Wildness</span><input type="range" min="0" max="100" value="0" id="slider-rotation"></div>
+        <div class="Slider-Item"><span>Sunlight</span><input type="range" min="0" max="100" value="50" id="slider-size"></div>
+        <div class="Slider-Item"><span>Nutrition</span><input type="range" min="0" max="100" value="1" id="slider-color"></div>
+      </div>
+    </div>
+
+</body>
+</html>
