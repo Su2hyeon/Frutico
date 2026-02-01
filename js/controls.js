@@ -108,10 +108,10 @@ const Controls = {
 
             if (val <= 50) {
                 // 0~50 구간: 100에서 250으로 증가
-                newSize = map(val, 0, 50, 150, 250);
+                newSize = map(val, 0, 50, 150, 350);
             } else {
                 // 50~100 구간: 250에서 600으로 증가
-                newSize = map(val, 50, 100, 250, 500);
+                newSize = map(val, 50, 100, 250, 470);
             }
             
             if (window.settings) {
@@ -128,14 +128,15 @@ const Controls = {
     setupMutationSliders() {
         const sW = document.getElementById('slider-mutation-w');
         const sH = document.getElementById('slider-mutation-h');
+
         
         const handleMutation = () => {
             if (typeof generateTextGrowth === 'function' && currentText) {
                 generateTextGrowth(currentText);
             }
-
             if (window.settings) {
-            window.settings.waveAmount = parseFloat(sW.value); 
+            window.settings.mutationW = parseFloat(sW.value); 
+            window.settings.mutationH = parseFloat(sH.value);    
             }
         };
 
