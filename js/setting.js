@@ -32,6 +32,7 @@ let bgTime = 0;
 let bgScale = 1.0;
 
 
+
 const sampleWords = ["Fruticose", "Foliose", "Moss", "Fungus", "Lichen"];
 const GROWTH_LIMIT = 1400;  // 점이 이 개수에 도달하면 성장이 서서히 멈춤
 const RIGIDITY = 0.5;      // 값이 높을수록 글자의 원래 형태를 더 뻣뻣하게 유지함 (0.1 ~ 0.5 권장)
@@ -422,7 +423,7 @@ function draw() {
     let shouldShowBg = (currentText.length > 0 && nutritionVal > 0);
     
     // 전체 배경 마스터 투명도 연산
-    bgAlpha = lerp(bgAlpha, shouldShowBg ? 255 : 0, 0.3);
+    bgAlpha = lerp(bgAlpha, shouldShowBg ? 255 : 0, 1.2);
 
     // [중요] 모든 이미지에 대해 개별 알파값 계산
     for (let i = 0; i < imgAlphas.length; i++) {
@@ -453,29 +454,28 @@ function draw() {
 
 
 
-    // 배경 이미지 출력 (기존 루프 로직 유지) + spread 조절 시 배경이 출렁거림
- if (bgAlpha > 1) {
+    
+// setting.js 내부 draw() 함수의 배경 섹션
+if (bgAlpha > 1) {
     push();
 
     const sizeSlider = document.getElementById('slider-size');
     const sizeVal = sizeSlider ? parseFloat(sizeSlider.value) : 50;
     let targetBgScale = map(sizeVal, 0, 100, 1.0, 1.15);
     
-    // 2. lerp를 이용한 부드러운 스케일 전환 (0.05 수치로 쫀득함 조절)
     bgScale = lerp(bgScale, targetBgScale, 0.05);
 
-    // 3. 화면 중앙을 기준으로 스케일 적용
     translate(width / 2, height / 2);
     scale(bgScale);
     translate(-width / 2, -height / 2);
     
     // 슬라이더 값들
-    let wAmount = (window.settings && window.settings.waveAmount) ? window.settings.waveAmount : 0;
-    const wildnessVal = document.getElementById('slider-rotation') ? parseFloat(document.getElementById('slider-rotation').value) : 0;
-    const speedVal = document.getElementById('slider-speed') ? parseFloat(document.getElementById('slider-speed').value) : 50;
+    let wAmount = (window.settings && window.settings.mutationW) ? window.settings.mutationW : 0;
+    // [추가] Height 슬라이더 값 가져오기
+    let hAmount = (window.settings && window.settings.mutationH) ? window.settings.mutationH : 0;
     
+    const speedVal = document.getElementById('slider-speed') ? parseFloat(document.getElementById('slider-speed').value) : 50;
 
-    // 2. 필터 적용
     drawingContext.filter = `blur(${map(speedVal, 0, 100, 0, 4)}px)`;
 
     for (let i = 0; i < bgImages.length; i++) {
@@ -485,7 +485,6 @@ function draw() {
 
             let imgElt = bgImages[i].canvas || bgImages[i].elt;
             
-            // [추가] 이미지 비율 유지 계산 (Aspect Fill)
             let imgRatio = imgElt.width / imgElt.height;
             let canvasRatio = width / height;
             let renderW, renderH;
@@ -498,28 +497,31 @@ function draw() {
                 renderW = (height + 100) * imgRatio;
             }
 
-            // 중앙 정렬 오프셋
+            // [추가] hAmount에 따라 세로 높이(renderH)를 늘림 (최대 2배까지)
+            let finalRenderH = renderH * map(hAmount, 0, 100, 1.0, 1.1);
+
+            // 중앙 정렬 오프셋 (finalRenderH 기준으로 재계산)
             let offsetX = (width - renderW) / 2;
-            let offsetY = (height - renderH) / 2;
+            let offsetY = (height - finalRenderH) / 2;
 
             if (wAmount > 3) {
                 let strips = 12;
-                let hStrip = height / strips;
                 let sH = imgElt.height / strips;
+                // [수정] 늘어난 높이를 조각 개수로 나눔
+                let dH = finalRenderH / strips;
 
                 for (let j = 0; j < strips; j++) {
-                    // Spread에 의한 가로 찢어짐만 적용 (위아래 찌부 방지)
                     let xDistort = sin(j * 0.4 + bgTime) * map(wAmount, 0, 100, 0, 40);
                     
                     drawingContext.drawImage(
                         imgElt, 0, j * sH, imgElt.width, sH,
-                        offsetX + xDistort, offsetY + j * (renderH / strips), 
-                        renderW, (renderH / strips) + 1 // 틈새 방지
+                        offsetX + xDistort, offsetY + j * dH, 
+                        renderW, dH + 1 
                     );
                 }
             } else {
-                // [수정] 강제 width, height 대신 계산된 비율(renderW, renderH) 사용
-                drawingContext.drawImage(imgElt, offsetX, offsetY, renderW, renderH);
+                // [수정] 늘어난 세로 길이(finalRenderH) 적용
+                drawingContext.drawImage(imgElt, offsetX, offsetY, renderW, finalRenderH);
             }
             drawingContext.restore();
         }
@@ -527,81 +529,10 @@ function draw() {
     drawingContext.filter = 'none';
     pop();
 }
-    let currentRot = (window.settings && window.settings.Rotation) ? window.settings.Rotation : 0;
-    
-    if (window.world && window.world.paths) { 
-        window.world.paths.forEach(path => {
-        let cX = path.middleX || width / 2;
-        let cY = path.middleY || height / 2;
-        let rOffset = path.rotOffset || 0;
-        let angle = (currentRot === 0) ? 0 : currentRot + rOffset;
+    if (window.world && !window.world.paused){
+        window.world.iterate();
+    }
 
-        if (angle !== 0) {
-            let cosA = Math.cos(angle);
-            let sinA = Math.sin(angle);
-            
-            path.nodes.forEach(n => {
-                let dx = n.x - cX;
-                let dy = n.y - cY;
-                
-                // 현재 좌표를 월드 좌표(회전된 위치)로 일시 변경
-                // n.position이 있으면 그것도 업데이트하여 에러 방지
-                let wx = cX + (dx * cosA - dy * sinA);
-                let wy = cY + (dx * sinA + dy * cosA);
-                
-                n.x = wx; n.y = wy;
-                if (n.position) { n.position.x = wx; n.position.y = wy; }
-                
-                // 속도(velocity)도 함께 회전시켜야 물리 연산이 튀지 않습니다.
-                if (n.velocity) {
-                    let vx = n.velocity.x;
-                    let vy = n.velocity.y;
-                    n.velocity.x = vx * cosA - vy * sinA;
-                    n.velocity.y = vx * sinA + vy * cosA;
-                }
-            });
-        }
-    });
-}
-
-    // 2. 물리 연산 실행 (이제 회전되어 겹친 노드들을 서로 밀어냄)
-    if (window.world && typeof window.world.paused !== 'undefined' && !window.world.paused) {
-    window.world.iterate();
-}
-
-    // 3. 물리 연산 결과를 다시 "로컬 좌표"로 복원
-    // 사용자님의 렌더링 로직이 translate/rotate를 쓰기 때문에 다시 되돌려줘야 합니다.
-    if (window.world.paths && Array.isArray(window.world.paths)) {
-        window.world.paths.forEach(path => {
-        let cX = path.middleX || width / 2;
-        let cY = path.middleY || height / 2;
-        let rOffset = path.rotOffset || 0;
-        let angle = (currentRot === 0) ? 0 : currentRot + rOffset;
-
-        if (angle !== 0) {
-            let cosA = Math.cos(-angle); // 역회전
-            let sinA = Math.sin(-angle);
-            
-            path.nodes.forEach(n => {
-                let dx = n.x - cX;
-                let dy = n.y - cY;
-                
-                let lx = cX + (dx * cosA - dy * sinA);
-                let ly = cY + (dx * sinA + dy * cosA);
-                
-                n.x = lx; n.y = ly;
-                if (n.position) { n.position.x = lx; n.position.y = ly; }
-
-                if (n.velocity) {
-                    let vx = n.velocity.x;
-                    let vy = n.velocity.y;
-                    n.velocity.x = vx * cosA - vy * sinA;
-                    n.velocity.y = vx * sinA + vy * cosA;
-                }
-            });
-        }
-    });
-}
 
     // --- 여기부터는 "훼손 금지" 요청하신 기존 렌더링 코드 ---
     if (window.settings && window.settings.FillColor) {
@@ -702,16 +633,15 @@ function generateTextGrowth(txt) {
     const mutateH = document.getElementById('slider-mutation-h') ? parseFloat(document.getElementById('slider-mutation-h').value) : 0;
     
     // 1. 초기 폰트 크기 계산 및 자동 스케일링
-    let fontSize;
+    const sizeSlider = document.getElementById('slider-size');
+    let fontSize = sizeSlider ? parseFloat(sizeSlider.value) : 250;
+    
+    
     if (window.settings && window.settings.FontSize) {
         fontSize = window.settings.FontSize;
     } else {
-       fontSize = constrain(width / (txt.length * 0.8 + 0.7), 100, 500);
-       const nutritionSlider = document.getElementById('slider-color');
-        if (nutritionSlider && parseFloat(nutritionSlider.value) === 0) {
-            nutritionSlider.value = 1; 
-            nutritionSlider.dispatchEvent(new Event('input'));
-        }
+        // 기본값 맵핑 (0~100 -> 150~500px)
+        fontSize = map(fontSize, 0, 100, 150, 500);
     }
 
     if (window.opentypeFont && window.opentypeFont.names && window.opentypeFont.names.fontFamily) {
@@ -722,6 +652,7 @@ function generateTextGrowth(txt) {
             fontSize *= 0.7; // 원래 크기의 70%로 축소 (원하는 비율로 조절 가능)
         }
     }
+
 
     let bbox = font.textBounds(txt, 0, 0, fontSize);
     let maxWidth = width * 0.8;
@@ -815,56 +746,53 @@ function splitPointsIntoGroups(pts) {
     return groups;
 }
 
- function injectIterate(path) {
+function injectIterate(path) {
     path.iterate = function(tree) {
         if (world.paused) return;
         if (!this.personality) return;
 
-        let driftVec = createVector(0, 0);
-
         const p = this.personality;
         const s = window.settings;
         
-        // 1. Wind 슬라이더(slider-rotation)에서 궤적 강도 가져오기
+        // 1. Wildness(Rotation 슬라이더)에 의한 표류(Drift) 힘 계산
         const windSlider = document.getElementById('slider-rotation');
-        const wildness = windSlider ? map(windSlider.value, 0, 100, 0, 4.0) : 0; 
+        const wildness = windSlider ? map(windSlider.value, 0, 100, 0, 1.0) : 0; // 강도를 4.0에서 2.0으로 하향
 
-        if (wildness > 0 && !world.paused) { // [수정] 멈췄을 땐 힘을 주지 않음
-            let time = frameCount * (0.02 + wildness * 0.05);
-            let noiseAngle = noise(path.charId * 200, frameCount * 0.8) * TWO_PI * 90;
-            let noiseScale = 0.5;
-            let nx = (noise(path.charId * 10, time) - 0.5) * wildness * 30;
-            let ny = (noise(path.charId * 20, time + 100) - 0.5) * wildness * 30;
-            
+        let driftVec = createVector(0, 0);
+        if (wildness > 0) {
+            let time = frameCount * (0.02 + wildness * 0.02);
+            let nx = (noise(path.charId * 10, time) - 0.5) * wildness * 10;
+            let ny = (noise(path.charId * 20, time + 100) - 0.5) * wildness * 10;
             driftVec = createVector(nx, ny);
         }
 
-        // 기본 성장 로직
-        if (this.nodes.length < p.growthLimit) {
-            if (Path.prototype.iterate) Path.prototype.iterate.apply(this, arguments);
+        // 2. [핵심] 기본 성장 로직 실행 (Path.prototype.iterate가 점을 추가함)
+        if (Path.prototype.iterate) {
+            Path.prototype.iterate.apply(this, arguments);
         }
 
-        
-
+        // 3. 추가적인 물리 힘(Wildness, Repulsion 등) 적용
         this.nodes.forEach((n, idx) => {
             if (!n.acceleration) n.acceleration = createVector(0, 0);
             
-            if (wildness > 1.0) {
-                n.acceleration.add(p5.Vector.random2D().mult(wildness * 0.2));
-            }
-            
-            // 궤적 힘 적용
+            // 표류 힘 주입
             n.acceleration.add(driftVec);
+            
+            if (wildness > 1.0) {
+                n.acceleration.add(p5.Vector.random2D().mult(wildness * 0.1));
+            }
 
+            // 개별 노드에 대한 추가 물리 법칙 (필요한 경우에만)
             this.applyRepulsion(idx, tree, s.RepulsionForce * p.repulsionMult); 
             this.applyAlignment(idx, s.AlignmentForce * p.alignmentMult);
             this.applyAttraction(idx);
-            
-            if (n.acceleration) n.acceleration.mult(p.speedMult);
-            n.iterate();
+
+            // [중요] 여기서 n.iterate()를 다시 호출하지 마세요! 
+            // Path.prototype.iterate 내부에서 이미 호출되거나, 
+            // 호출되지 않더라도 위치 업데이트는 엔진이 관리해야 성장이 꼬이지 않습니다.
         });
 
-        // 3. [중요] 노드가 이동한 만큼 회전 중심축도 함께 이동 (제자리 회전 방지)
+        // 중심축 이동 업데이트
         path.middleX += driftVec.x * 0.5;
         path.middleY += driftVec.y * 0.5;
     };
@@ -1045,7 +973,12 @@ function resetAll() {
         window.world.clearPaths();
     }
 
-    window.settings.FillColor = "#282828";
+    if (window.settings) {
+        delete window.settings.FontSize; 
+        window.settings.FillColor = "#282828";
+    }
+
+    isFirstTyping = true;
 
     document.body.classList.add("show-placeholder");
     const placeholder = document.querySelector('.Placeholder');
@@ -1076,11 +1009,9 @@ function resetAll() {
         if (window.world) window.world.clearPaths();
         // 3. 배경 초기화
         background(255);
-        console.log("Font reset to IBM Plex Mono Bold");
     });
     background(255);
 
-    ifFistTyping = true;
 
 }
 
