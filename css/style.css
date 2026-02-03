@@ -169,7 +169,7 @@ canvas {
 
 .Button-Group {
     display: flex;
-    gap: 2vw;
+    gap: 1vw;
     margin-bottom: 0.8vh; /* 슬라이더들과의 높이 맞춤 */
     margin-left: -0.5vw;
 }
