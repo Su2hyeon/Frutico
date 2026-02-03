@@ -45,6 +45,7 @@ body, html {
     overflow: hidden;
 }
 
+
 canvas {
     display: block;
     position: absolute;
@@ -63,12 +64,12 @@ canvas {
 
 .Header__right {
     position: absolute;
-    right: 130px;
-    top: 5px;
+    right: 8vw;
+    top: 1vh;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 1em;
+    gap: 1rem;
 }
 
 #font-gallery {
@@ -90,7 +91,8 @@ canvas {
 
 .font-item {
     position: absolute; /* 이 설정이 있어야 nth-child의 top/left가 먹힙니다 */
-    width: 120px; /* 아이템 너비 고정 */
+    width: 8vw; /* 아이템 너비 고정 */
+    min-width: 80px;
     text-align: center;
     cursor: grab;
     pointer-events: auto !important; /* 폰트 변경 가능하게 설정 */
@@ -101,9 +103,9 @@ canvas {
 
 .font-name {
     display: block;
-    margin-top: 5px;
+    margin-top: 0.6rem;
     font-family: helvetica, sans-serif;
-    font-size: 11.5px;
+    font-size: 0.7rem;
     line-height: 1.3;
     letter-spacing: -0.01em; /* 자간 설정 */
     word-break: break-all; /* 긴 이름 줄바꿈 설정 */
@@ -149,7 +151,7 @@ canvas {
     width: 100vw !important;
     background: transparent !important; 
     z-index: 9999 !important; 
-    padding: 20px 40px !important;
+    padding: 2vh 4vw !important;
     justify-content: space-between !important;
     align-items: flex-end !important;
     pointer-events: auto !important;
@@ -206,9 +208,9 @@ canvas {
 
 .Slider-Grid {
   display: grid !important;
-  grid-template-columns: repeat(3, 235px); /* 3개씩 한 줄 */
+  grid-template-columns: repeat(3, 16.5vw); /* 3개씩 한 줄 */
   grid-template-rows: repeat(2, auto);    /* 총 2줄 */
-  gap: 0px 40px; 
+  gap: 0 3vw; 
 }
 
 .Slider-Item {
@@ -223,7 +225,8 @@ canvas {
 
 .Slider-Item span {
     /* 1. 폰트 크기 (여기 숫자를 키우면 확실히 커집니다) */
-    font-size: 14.5px !important; 
+    font-size: 0.9rem !important; 
+    flex: 1;
     
     /* 2. 폰트 종류 */
     font-family: helvetica, sans-serif;
@@ -254,8 +257,8 @@ canvas {
 }
 .Slider-Item input[type="range"] {
     /* [핵심] 바의 길이를 고정해야 우측 끝 라인이 일직선으로 맞습니다 */
-    flex: 0 0 160px !important; 
-    width: 160px !important;
+    flex: 0 0 12vw !important; 
+    width: 12vw !important;
     
     /* range.css의 패딩이 정렬을 방해하므로 강제 초기화 */
     margin: 0 !important;
@@ -269,10 +272,11 @@ canvas {
 .Logo {
   position: absolute;
   left: 50%;
-  top: 28px;
+  top: 3vh;
   transform: translateX(-50%) scale(0.85);
-  width: 270px;
-  height: 85px;
+  width: 20vw;
+  min-width: 200px;
+  height: 10vh;
   background: url("../img/Fruticose_Logo2.svg") no-repeat;
   background-size: contain;
   background-position: center center;
@@ -335,7 +339,7 @@ body.show-placeholder .Placeholder {
     font-family: Arial, Helvetica, sans-serif;
     line-height: normal;
     text-align: center;
-    font-size: 90px;
+    font-size: 6vw;
     margin: 0;
 }
 
