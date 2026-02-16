@@ -58,9 +58,9 @@ window.settings = settings;
 
 function preload() {
     font = loadFont('IBMPlexMono-Bold.otf');
-    bgImages[0] = loadImage('bg/bg-01.png'); //1단계
-    bgImages[1] = loadImage('bg/bg-02.png');//2단계
-    bgImages[2] = loadImage('bg/bg-03.png');//3단계
+    // bgImages[0] = loadImage('bg/bg-01.png'); //1단계
+    // bgImages[1] = loadImage('bg/bg-02.png');//2단계
+    // bgImages[2] = loadImage('bg/bg-03.png');//3단계
 }
 function setup() {
     let canvases = document.querySelectorAll('canvas');
@@ -653,13 +653,14 @@ function generateTextGrowth(txt) {
         }
     }
 
-
     let bbox = font.textBounds(txt, 0, 0, fontSize);
     let maxWidth = width * 0.8;
     if (bbox.w > maxWidth) {
         fontSize *= (maxWidth / bbox.w);
         bbox = font.textBounds(txt, 0, 0, fontSize);
     }
+
+
     
     // 2. [핵심] 시각적 중앙 오프셋 계산 (모든 점의 실제 min/max 측정)
     let allPointsTemp = [];
@@ -674,6 +675,10 @@ function generateTextGrowth(txt) {
         allPointsTemp.push(...pts);
         curX += cBbox.w * 1.15; // 글자 간격 조절
     }
+    
+    let pollutionVal = document.getElementById('slider-pollution') ? parseFloat(document.getElementById('slider-pollution').value) : 0;
+
+
 
     // 추출된 모든 점의 경계 계산
     let minX = Math.min(...allPointsTemp.map(p => p.x));
@@ -879,6 +884,7 @@ function keyReleased() {
 
 function addPath(nodes) {
     let textPath = new Path(this, nodes, settings, true);
+    
     const originalIterate = textPath.iterate;
     textPath.iterate = function(tree) {
         if (this.nodes.length > GROWTH_LIMIT) {
@@ -928,32 +934,51 @@ let isRecording = false;
 let recorder;
 let chunks = [];
 
+function getSupportedMediaRecorderOptions() {
+    const candidates = [
+        { mimeType: 'video/mp4;codecs=h264', videoBitsPerSecond: 8000000 },
+        { mimeType: 'video/mp4', videoBitsPerSecond: 8000000 },
+        { mimeType: 'video/webm;codecs=h264', videoBitsPerSecond: 8000000 },
+        { mimeType: 'video/webm', videoBitsPerSecond: 8000000 }
+    ];
+    for (const opt of candidates) {
+        if (MediaRecorder.isTypeSupported(opt.mimeType)) return opt;
+    }
+    return {};
+}
+
 function toggleRecording() {
-    const canvas = document.querySelector('canvas'); // p5 캔버스 요소만 선택
+    const canvas = document.querySelector('canvas');
     const btn = document.getElementById('btn-record');
 
     if (!isRecording) {
         chunks = [];
-        // 캔버스 자체의 스트림을 가져와서 UI(버튼, 푸터)는 제외됩니다.
         const stream = canvas.captureStream(30); 
-        recorder = new MediaRecorder(stream, { 
-            mimeType: 'video/webm; codecs=vp9' 
-        });
+        
+        // [핵심 수정] app.js의 방식대로 최상의 호환 옵션 선택
+        const options = getSupportedMediaRecorderOptions();
+        recorder = new MediaRecorder(stream, options);
 
         recorder.ondataavailable = (e) => {
-            if (e.data.size > 0) chunks.push(e.data);
+            if (e.data && e.data.size > 0) chunks.push(e.data);
         };
 
         recorder.onstop = () => {
-        const blob = new Blob(chunks, { type: 'video/mp4' }); // MIME 타입을 mp4로 시도
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        // 파일명을 .mp4로 지정하여 일반 플레이어에서 열리도록 유도
-        a.download = `Frutico_Record_${currentText || 'motion'}.mp4`; 
-        a.click();
-        window.URL.revokeObjectURL(url);
-    };
+            // 녹화된 실제 mimeType을 확인하여 확장자 결정
+            const actualType = recorder.mimeType;
+            const isMp4 = actualType.includes('mp4');
+            
+            const blob = new Blob(chunks, { type: actualType });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            
+            // 실제 데이터 형식에 맞는 확장자로 저장
+            a.download = `Frutico_Record_${currentText || 'motion'}.${isMp4 ? 'mp4' : 'webm'}`;
+            a.click();
+            
+            window.URL.revokeObjectURL(url);
+        };
 
         recorder.start();
         isRecording = true;
