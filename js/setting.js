@@ -58,9 +58,9 @@ window.settings = settings;
 
 function preload() {
     font = loadFont('IBMPlexMono-Bold.otf');
-    // bgImages[0] = loadImage('bg/bg-01.png'); //1단계
-    // bgImages[1] = loadImage('bg/bg-02.png');//2단계
-    // bgImages[2] = loadImage('bg/bg-03.png');//3단계
+    bgImages[0] = loadImage('bg/bg-01.png'); //1단계
+    bgImages[1] = loadImage('bg/bg-02.png');//2단계
+    bgImages[2] = loadImage('bg/bg-03.png');//3단계
 }
 function setup() {
     let canvases = document.querySelectorAll('canvas');
