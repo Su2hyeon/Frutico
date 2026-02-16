@@ -934,12 +934,13 @@ let isRecording = false;
 let recorder;
 let chunks = [];
 
+
 function getSupportedMediaRecorderOptions() {
     const candidates = [
-        { mimeType: 'video/mp4;codecs=h264', videoBitsPerSecond: 8000000 },
-        { mimeType: 'video/mp4', videoBitsPerSecond: 8000000 },
-        { mimeType: 'video/webm;codecs=h264', videoBitsPerSecond: 8000000 },
-        { mimeType: 'video/webm', videoBitsPerSecond: 8000000 }
+        { mimeType: 'video/mp4;codecs=h264', videoBitsPerSecond: 5000000 }, // 비트레이트를 5M로 살짝 낮추면 긴 영상에 더 안정적입니다.
+        { mimeType: 'video/mp4', videoBitsPerSecond: 5000000 },
+        { mimeType: 'video/webm;codecs=h264', videoBitsPerSecond: 5000000 },
+        { mimeType: 'video/webm', videoBitsPerSecond: 5000000 }
     ];
     for (const opt of candidates) {
         if (MediaRecorder.isTypeSupported(opt.mimeType)) return opt;
@@ -947,7 +948,8 @@ function getSupportedMediaRecorderOptions() {
     return {};
 }
 
-function toggleRecording() {
+// 2. toggleRecording 함수 안에서 위 함수를 호출하여 사용합니다.
+async function toggleRecording() {
     const canvas = document.querySelector('canvas');
     const btn = document.getElementById('btn-record');
 
@@ -955,7 +957,7 @@ function toggleRecording() {
         chunks = [];
         const stream = canvas.captureStream(30); 
         
-        // [핵심 수정] app.js의 방식대로 최상의 호환 옵션 선택
+        // 여기서 위 함수를 사용하여 최적의 옵션을 가져옵니다.
         const options = getSupportedMediaRecorderOptions();
         recorder = new MediaRecorder(stream, options);
 
@@ -963,23 +965,26 @@ function toggleRecording() {
             if (e.data && e.data.size > 0) chunks.push(e.data);
         };
 
-        recorder.onstop = () => {
-            // 녹화된 실제 mimeType을 확인하여 확장자 결정
-            const actualType = recorder.mimeType;
-            const isMp4 = actualType.includes('mp4');
-            
-            const blob = new Blob(chunks, { type: actualType });
+        recorder.onstop = async () => {
+            const duration = Date.now() - startTime;
+            let blob = new Blob(chunks, { type: recorder.mimeType });
+
+            // 30초 이상 긴 영상도 썸네일이 뜨게 만드는 핵심 수리 로직
+            if (typeof ysFixWebmDuration !== 'undefined') {
+                blob = await ysFixWebmDuration(blob, duration, { type: 'video/mp4' });
+            }
+
             const url = URL.createObjectURL(blob);
             const a = document.createElement('a');
             a.href = url;
-            
-            // 실제 데이터 형식에 맞는 확장자로 저장
-            a.download = `Frutico_Record_${currentText || 'motion'}.${isMp4 ? 'mp4' : 'webm'}`;
+            // 실제 지원되는 형식에 맞춰 확장자 자동 선택
+            const extension = recorder.mimeType.includes('mp4') ? 'mp4' : 'webm';
+            a.download = `Frutico_Record_${currentText || 'motion'}.${extension}`; 
             a.click();
-            
             window.URL.revokeObjectURL(url);
         };
 
+        startTime = Date.now();
         recorder.start();
         isRecording = true;
         btn.innerText = "Stop Record";
